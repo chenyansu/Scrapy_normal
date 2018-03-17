@@ -65,55 +65,6 @@ class JsonWriterPipeline(object):
         self.file.write(line)
         return item 
     
-
-# class MySQLTwistedPipeline(object):
-
-#     def process_item(self, item, spider):
-#         """使用twisted将mysql插入变成异步执行"""
-#         query = self.dbpool.runInteraction(self.do_insert, item)
-#         print("cross process_item")
-
-#     def do_insert(self, cursor, item):
-#         # 执行具体的插入
-#         # 根据不同的item 构建不同的sql语句并插入到mysql中
-#         item_value_list = []
-#         for i in self.item_key_list:
-#             item_value_list.append(item[i]) # 循环获取键值
-#         params = tuple(item_value_list)
-#         cursor.execute(self.insert_sql, params) 
-
-#     def open_spider(self, spider):
-
-#         dbparms = dict(
-#             host = settings["MYSQL_HOST"],
-#             db = settings["MYSQL_DB_NAME"],
-#             user = settings["MYSQL_USER"],
-#             passwd = settings["MYSQL_PASSWORD"],
-#             charset='utf8',
-#             cursorclass=pymysql.cursors.DictCursor,
-#         )
-#         self.dbpool = adbapi.ConnectionPool("pymysql", **dbparms)
-
-#         """ 生成sql指令 """
-#         table_name = spider.name
-#         part1 = "insert into "
-#         part2 = table_name
-#         part3 = "("
-#         self.item_key_list= [] ##### 键列表 ####
-#         for k in item.keys():
-#             self.item_key_list.append(k)
-#         part4 = str(self.item_key_list.item_key_list).replace("[", "").replace("]", "")
-#         part5 = ") Values ("
-#         for s in range(len(item)):
-#             part5 += "%s, "
-#         part6 = ")"
-#         self.insert_sql = part1+part2+part3+part4+part5+part6 ### mysql insert指令 ###
-#         print("cross open_spider")
-#         return spider
-
-#     def close_spider(self, spider):
-#         print("cross close_spider")
-#         return item
         
 class MySQLTwistedPipeline(object):
     
