@@ -9,5 +9,8 @@ scrapy_normal/items.py
 scrapy_normal/middlewares.py
 scrapy_normal/pipelines.py
 scrapy_normal/settings.py
+scrapy_normal/normal_tools/__init__.py
+scrapy_normal/normal_tools/mysqldb.py
+scrapy_normal/normal_tools/tools.py
 scrapy_normal/spiders/__init__.py
 scrapy_normal/spiders/quotes_spider_follow.py

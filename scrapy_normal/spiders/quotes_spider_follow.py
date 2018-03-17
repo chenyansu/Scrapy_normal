@@ -17,7 +17,7 @@ class QuotesSpider(scrapy.Spider):
             yield { # [1] yield语句产出，可以通过-o quotes.json 选项输出
                 'text': quote.css('span.text::text').extract_first(),
                 'author': quote.css('small.author::text').extract_first(),
-                'tags': quote.css('div.tags a.tag::text').extract(),
+                # 'tags': quote.css('div.tags a.tag::text').extract(),
             }
         
         next_page = response.css('li.next a::attr(href)').extract_first()

@@ -11,4 +11,8 @@ import scrapy
 class ScrapyNormalItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    # text = Scrapy.Field()
+    # text = Scrapy.Field()
+    # text = Scrapy.Field()
+
+

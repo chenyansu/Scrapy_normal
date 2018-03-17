@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+
+
 # Scrapy settings for scrapy_normal project
 # 
 #   在这里，此文件只包括重要的和常用的设置，具体你可以参考以下文档：
@@ -27,15 +30,15 @@ CONCURRENT_REQUESTS = 32
 # 
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # 下载延迟
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 0.25
 # 下载延迟设置将只遵守一个：
 # 对单个网站进行并发请求的最大值。(default: 0)
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # 对单个IP进行并发请求的最大值。如果非0，则忽略 CONCURRENT_REQUESTS_PER_DOMAIN 设定， 使用该设定。 也就是说，并发限制将针对IP，而不是网站。
-#CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS_PER_IP = 16
 
-# 是否开启cookie下载(enabled by default)
-#COOKIES_ENABLED = False
+# 是否开启cookie(enabled by default)
+COOKIES_ENABLED = False
 #COOKIES_DEBUG = False
 
 # Disable Telnet Console (enabled by default)
@@ -49,15 +52,21 @@ CONCURRENT_REQUESTS = 32
 
 # 爬虫中间键
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'scrapy_normal.middlewares.ScrapyNormalSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    # scrapy-flash 扩展
+   'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
+   'scrapy_normal.middlewares.ScrapyNormalSpiderMiddleware': 543,
+}
 
 # 下载中间键
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'scrapy_normal.middlewares.ScrapyNormalDownloaderMiddleware': 543,
    'scrapy_normal.middlewares.UAmiddleware': 800,
+   # scrapy-flash 扩展
+   'scrapy_splash.SplashCookiesMiddleware': 723,
+   'scrapy_splash.SplashMiddleware': 725,
+   'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
 # scrapy 扩展
@@ -69,7 +78,14 @@ DOWNLOADER_MIDDLEWARES = {
 # 项目管道 
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'scrapy_redis.pipelines.RedisPipeline': 300
+   'scrapy_redis.pipelines.RedisPipeline': 300,
+   'scrapy_normal.pipelines.CheckPipeline': 301,  
+   'scrapy_normal.pipelines.MongoDBPipeline': 302,
+#    'scrapy_normal.pipelines.JsonWriterPipeline': 303,
+#    'scrapy_normal.pipelines.MySQLTwistedPipeline': 304,
+
+
+   
 }
 
 # 自动限速扩展 (disabled by default)
@@ -97,6 +113,11 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+################################################################################
+############################## scrapy-redis 扩展 ################################
+################################################################################
+
+ 
 #启用Redis调度存储请求队列
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
  
@@ -152,3 +173,52 @@ REDIS_PORT = 6379
  
 #设置redis使用utf-8之外的编码
 #REDIS_ENCODING = 'latin1'
+
+
+################################################################################
+############################## scrapy-splash 扩展 ###############################
+################################################################################
+
+### 此设置中已经关闭 ###
+
+# 使用方法：
+# 在spider中：
+# from scrapy_splash import SplashRequest
+# 将一切scrapy.Request替换为SplashRequest
+
+# 设置下载中间件
+# 设置爬虫中间件
+
+# splashe 端口
+# SPLASH_URL = 'http://127.0.0.1:8050/'
+
+# 配置消息队列所使用的过滤类
+# DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
+
+# 配置消息队列需要使用的类
+# HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
+
+
+################################################################################
+################################## 数据库管道 配置 ###############################
+################################################################################
+
+# MongoDB
+MONGODB_SERVER = "127.0.0.1"                                                   
+MONGODB_PORT = 27017                                                  
+MONGODB_DB = "scrapy_normal"                                          
+MONGODB_COLLECTION = "Scrapy_normal_collection"                     
+# MONGODB_USER = ""                                                   
+# MONGODB_PASSWORD = os.environ.get('MongoDB_PASSWORD')               
+
+
+# MYSQL
+MYSQL_HOST = '127.0.0.1'
+MYSQL_PORT = 3306
+MYSQL_USER = 'chenyansu'
+MYSQL_PASSWORD = os.environ.get('MySQL_PASSWORD')
+MYSQL_DB_NAME = 'scrapy_db'
+
+# JSON
+# 默认在JSON_FOLDER 下以spider-name + 时间戳 + .json命名
+JSON_FOLDER = "/home/chenyansu/json/"

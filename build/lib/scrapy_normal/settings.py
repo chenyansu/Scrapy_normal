@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os
+
+
 # Scrapy settings for scrapy_normal project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
-#
+# 
+#   在这里，此文件只包括重要的和常用的设置，具体你可以参考以下文档：
+# 
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
@@ -15,74 +17,95 @@ SPIDER_MODULES = ['scrapy_normal.spiders']
 NEWSPIDER_MODULE = 'scrapy_normal.spiders'
 
 
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
+# 通过user-agent认证你的身份(或者你网站的身份)对爬行负法律责任(常见于搜索引擎识别)
 #USER_AGENT = 'scrapy_normal (+http://www.yourdomain.com)'
 
-# Obey robots.txt rules
+# 遵从 robots.txt 协议
 ROBOTSTXT_OBEY = False
 
-# Configure maximum concurrent requests performed by Scrapy (default: 16)
+# Scrapy downloader 并发请求(concurrent requests)的最大值。
 CONCURRENT_REQUESTS = 32
 
-# Configure a delay for requests for the same website (default: 0)
-# See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
-# See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
-# The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
 
-# Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+# 
+# See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
+# 下载延迟
+DOWNLOAD_DELAY = 0.25
+# 下载延迟设置将只遵守一个：
+# 对单个网站进行并发请求的最大值。(default: 0)
+#CONCURRENT_REQUESTS_PER_DOMAIN = 16
+# 对单个IP进行并发请求的最大值。如果非0，则忽略 CONCURRENT_REQUESTS_PER_DOMAIN 设定， 使用该设定。 也就是说，并发限制将针对IP，而不是网站。
+CONCURRENT_REQUESTS_PER_IP = 16
+
+# 是否开启cookie(enabled by default)
+COOKIES_ENABLED = False
+#COOKIES_DEBUG = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
-# Override the default request headers:
+# 默认的请求头:
 #DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
 #}
 
-# Enable or disable spider middlewares
+# 爬虫中间键
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'scrapy_normal.middlewares.ScrapyNormalSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    # scrapy-flash 扩展
+   'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
+   'scrapy_normal.middlewares.ScrapyNormalSpiderMiddleware': 543,
+}
 
-# Enable or disable downloader middlewares
+# 下载中间键
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'scrapy_normal.middlewares.ScrapyNormalDownloaderMiddleware': 543,
    'scrapy_normal.middlewares.UAmiddleware': 800,
+   # scrapy-flash 扩展
+   'scrapy_splash.SplashCookiesMiddleware': 723,
+   'scrapy_splash.SplashMiddleware': 725,
+   'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
-# Enable or disable extensions
+# scrapy 扩展
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
 #EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
-# Configure item pipelines
+# 项目管道 
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'scrapy_redis.pipelines.RedisPipeline': 300
+   'scrapy_redis.pipelines.RedisPipeline': 300,
+   'scrapy_normal.pipelines.CheckPipeline': 301,  
+#    'scrapy_normal.pipelines.MongoDBPipeline': 302,
+#    'scrapy_normal.pipelines.JsonWriterPipeline': 302,
+   'scrapy_normal.pipelines.MySQLTwistedPipeline': 302,
+
+
+   
 }
 
-# Enable and configure the AutoThrottle extension (disabled by default)
+# 自动限速扩展 (disabled by default)
+# spider永远以1并发请求数及 AUTOTHROTTLE_START_DELAY 中指定的下载延迟启动。
+# 当接收到回复时，下载延迟会调整到该回复的延迟与之前下载延迟之间的平均值。
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
-# The initial download delay
+# 初始下载延迟(单位秒)
 #AUTOTHROTTLE_START_DELAY = 5
-# The maximum download delay to be set in case of high latencies
+# 在高延迟情况下最大的下载延迟(单位秒)
 #AUTOTHROTTLE_MAX_DELAY = 60
-# The average number of requests Scrapy should be sending in parallel to
-# each remote server
+# 默认情况下，AutoThrottle调整延迟发送一个同步请求每个远程网站。
+# 将此选项设置为更高的值（例如2），以增加远程服务器上的吞吐量和负载。
+# 下调（如0.5）使爬虫更保守和礼貌
 #AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
-# Enable showing throttling stats for every response received:
+# 起用AutoThrottle调试(debug)模式，展示每个接收到的response。
 #AUTOTHROTTLE_DEBUG = False
 
-# Enable and configure HTTP caching (disabled by default)
+# 启用和配置HTTP缓存 (disabled by default)
+# 理论上应该在调试的时候开启，这样可以避免以为频繁请求而被网站封杀
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 #HTTPCACHE_ENABLED = True
 #HTTPCACHE_EXPIRATION_SECS = 0
@@ -90,6 +113,11 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+################################################################################
+############################## scrapy-redis 扩展 ################################
+################################################################################
+
+ 
 #启用Redis调度存储请求队列
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
  
@@ -145,3 +173,52 @@ REDIS_PORT = 6379
  
 #设置redis使用utf-8之外的编码
 #REDIS_ENCODING = 'latin1'
+
+
+################################################################################
+############################## scrapy-splash 扩展 ###############################
+################################################################################
+
+### 此设置中已经关闭 ###
+
+# 使用方法：
+# 在spider中：
+# from scrapy_splash import SplashRequest
+# 将一切scrapy.Request替换为SplashRequest
+
+# 设置下载中间件
+# 设置爬虫中间件
+
+# splashe 端口
+# SPLASH_URL = 'http://127.0.0.1:8050/'
+
+# 配置消息队列所使用的过滤类
+# DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
+
+# 配置消息队列需要使用的类
+# HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
+
+
+################################################################################
+################################## 数据库管道 配置 ###############################
+################################################################################
+
+# MongoDB
+MONGODB_SERVER = "127.0.0.1"                                                   
+MONGODB_PORT = 27017                                                  
+MONGODB_DB = "scrapy_normal"                                          
+MONGODB_COLLECTION = "Scrapy_normal_collection"                     
+# MONGODB_USER = ""                                                   
+# MONGODB_PASSWORD = os.environ.get('MongoDB_PASSWORD')               
+
+
+# MYSQL
+MYSQL_HOST = '127.0.0.1'
+MYSQL_PORT = 3306
+MYSQL_USER = 'chenyansu'
+MYSQL_PASSWORD = os.environ.get('MySQL_PASSWORD')
+MYSQL_DB_NAME = 'scrapy_db'
+
+# JSON
+# 默认在JSON_FOLDER 下以spider-name + 时间戳 + .json命名
+JSON_FOLDER = "/home/chenyansu/json/"
